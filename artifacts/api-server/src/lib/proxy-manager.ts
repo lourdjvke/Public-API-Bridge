@@ -70,8 +70,8 @@ async function livenessCheck(proxyUrl: string): Promise<boolean> {
     // Use native fetch with proxy via environment trick isn't possible,
     // so we do a TCP-level check via a simple HEAD using wreq-js lite mode
     const wreq = await import("wreq-js");
-    const fetchFn = wreq.default?.fetch ?? (wreq as unknown as { fetch: typeof fetch }).fetch;
-    const result = await (fetchFn as (url: string, opts: Record<string, unknown>) => Promise<Response>)(
+    const fetchFn = wreq.default?.fetch ?? (wreq as unknown as { fetch: unknown }).fetch;
+    const result = await (fetchFn as (url: string, opts: Record<string, unknown>) => Promise<unknown>)(
       LIVENESS_URL,
       {
         impersonate: "chrome116",
@@ -79,7 +79,8 @@ async function livenessCheck(proxyUrl: string): Promise<boolean> {
         timeout: LIVENESS_TIMEOUT_MS,
       }
     );
-    return result.status >= 200 && result.status < 500;
+    const res = result as { status: number };
+    return res.status >= 200 && res.status < 500;
   } catch {
     return false;
   }

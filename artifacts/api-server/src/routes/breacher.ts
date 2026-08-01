@@ -29,7 +29,7 @@ router.get("/", async (req, res): Promise<void> => {
   }
 
   const wreq = await import("wreq-js");
-  const fetchFn = wreq.default?.fetch ?? (wreq as unknown as { fetch: typeof fetch }).fetch;
+  const fetchFn = wreq.default?.fetch ?? (wreq as unknown as { fetch: unknown }).fetch;
 
   let lastError: unknown;
   let lastStatus: number | null = null;
@@ -56,10 +56,11 @@ router.get("/", async (req, res): Promise<void> => {
         fetchOptions["proxy"] = proxy.url;
       }
 
-      const upstream = await (fetchFn as (url: string, opts: Record<string, unknown>) => Promise<Response>)(
+      const result = await (fetchFn as (url: string, opts: Record<string, unknown>) => Promise<unknown>)(
         target,
         fetchOptions,
       );
+      const upstream = result as { status: number; text: () => Promise<string>; headers: { get: (key: string) => string | null } };
 
       lastStatus = upstream.status;
 
