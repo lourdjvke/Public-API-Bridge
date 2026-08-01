@@ -191,6 +191,9 @@ importers:
       pino-http:
         specifier: ^10.5.0
         version: 10.5.0
+      wreq-js:
+        specifier: ^2.3.1
+        version: 2.3.1
     devDependencies:
       '@types/cookie-parser':
         specifier: ^1.4.10
@@ -2837,6 +2840,11 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
+  wreq-js@2.3.1:
+    resolution: {integrity: sha512-vaKasaKeskrDKEuuO5Q5uamEG9a6FrF5ZSicH7TCvYS4RxF7/gzaU/vYqwJzcs+uydyJPVWY1KCvfVCgp0tiGA==}
+    cpu: [x64, arm64]
+    os: [darwin, linux, win32]
+
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
@@ -5280,6 +5288,8 @@ snapshots:
       isexe: 2.0.0
 
   wrappy@1.0.2: {}
+
+  wreq-js@2.3.1: {}
 
   xtend@4.0.2: {}
 

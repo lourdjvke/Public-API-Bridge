@@ -1,0 +1,215 @@
+Using these: The Challenge: Cloudflare Anti-Bot & IP Blocking Sofascore protects its backend endpoints (sofascore.com/api/v1/...) using Cloudflare, which inspects incoming requests in two primary ways: TLS Fingerprinting (JA3/JA4): Cloudflare checks the lower-level TLS handshake. Native fetch in Node.js or standard HTTP clients are immediately flagged and blocked. Datacenter IP Blocking: Requests originating directly from cloud hosting IPs (e.g. Google Cloud Run) are blocked or challenged. 2. Technology & Architecture Used A. TLS & Browser Impersonation (wreq-js / libcurl) Technology: wreq-js (a Node.js native wrapper around libcurl compiled with browser TLS fingerprinting). How it works: Instead of standard Node.js HTTP sockets, requests use browser impersonation (e.g., chrome116). This replicates Chrome's exact TLS extension order, cipher suites, HTTP/2 settings, and header ordering so Cloudflare recognizes the request as a real browser. B. Dynamic Proxy Harvesting & Rotation Engine Technology: Custom Node.js background harvester + proxy pool manager in server.ts. How it works: The server continuously harvests public HTTP/SOCKS proxy lists from dynamic sources. It validates working proxies against Sofascore and maintains a cache of known-good proxy IPs. Every request rotates through active working proxies so Sofascore never sees requests coming directly from datacenter IPs.
+
+And internal CORS. I need you to do something straightforward, it's called a breacher.... Basically an API param that lets users call API that are already public via things like browser visits but now enabling it to be called from code in cases that otherwise cloudflare stuff blocks even public API. Eg: https://www.sofascore.com/api/v1/event/16115794/odds/1/all — that's a public API accessible via browser but as soon as one tries calling from code they get a 403 error.
+
+So method has been stated and challenge stated as well. I need no dwelling on anything, this is a new project so no need to explore shit just get right into it so users can use like "?target=https://www.sofascore.com/api/v1/event/16115794/odds/1/all" and call from code to get actual API response but like 100x more reliable and stuff. And no I do not want the structure of "?target={URL}" changed at all. I do not want summaries or documentation. Just do it and test it with the sofascore from actual code and ensure it works: https://www.sofascore.com/api/v1/event/16115794/odds/1/all
+
+28 minutes ago
+Bypassing security measures
+
+Bypassing security measures
+The user wants me to build a "breacher" API - an endpoint that proxies requests to Cloudflare-protected APIs (like Sofascore) using browser TLS fingerprinting and proxy rotation to bypass the protection. The endpoint should work like <baseurl>?target=https://www.sofascore.com/api/v1/event/16115794/odds/1/all.
+
+Let me look at the existing API server structure and then implement this.
+
+Key requirements:
+
+Use wreq-js (browser TLS fingerprinting via libcurl)
+Dynamic proxy harvesting and rotation
+Endpoint: GET /?target=<url> (or maybe /api?target=<url>)
+Test with the Sofascore URL
+Now I'll examine the current API server code and build out the solution.
+
+Building a Cloudflare-bypass proxy using browser TLS fingerprinting (wreq-js) + proxy rotation, exposed as ?target=<url> on the API server.
+
+
+Show less
+
+Opened app.ts
+
+Opened index.ts
+
+Opened package.json
+Researching TLS fingerprinting and proxy integration
+
+Researching TLS fingerprinting and proxy integration
+
+Ran npm info
+
+Opened health.ts
+
+Opened index.ts
+Implementing the proxy and routing logic
+
+Implementing the proxy and routing logic
+
+Installed wreq-js
+Implementing proxy and route logic
+
+Implementing proxy and route logic
+Now let me build the proxy manager and breacher route in parallel:
+
+
+Show less
+
+Created proxy-manager.ts
+
+Created breacher.ts
+Executing the remaining implementation steps
+
+Executing the remaining implementation steps
+
+Created index.ts
+
+Edited index.ts
+Initializing and testing the server
+
+Initializing and testing the server
+
+Edited index.ts
+Building and testing the server
+
+Building and testing the server
+
+Built the project
+Initiating workflow and testing endpoint
+
+Initiating workflow and testing endpoint
+Restarted workflow artifacts/api-server: API Server
+Verifying logs and testing endpoint
+
+Verifying logs and testing endpoint
+
+Refreshed logs
+Testing proxy validation effectiveness
+
+Testing proxy validation effectiveness
+Server is up. Let me test the Sofascore endpoint now:
+
+
+Show less
+
+Fetched a URL
+Verifying library import methods
+
+Verifying library import methods
+
+Ran a Node.js script
+Investigating bundle resolution errors
+
+Investigating bundle resolution errors
+
+Ran a Node.js script
+
+Listed files
+Correcting module imports and configuration
+
+Correcting module imports and configuration
+
+Ran a Node.js script
+
+Opened build.mjs
+Correcting imports and bundling configuration
+
+Correcting imports and bundling configuration
+The direct call gets 403 even with TLS fingerprinting — proxy rotation is needed. Two fixes needed: externalize wreq-js from esbuild (it has Rust binaries) and fix the export name (fetch, not wreq).
+
+
+Show less
+
+Edited build.mjs
+
+Edited proxy-manager.ts
+
+Edit cancelled: breacher.ts
+Reading the breacher file
+
+Reading the breacher file
+
+Opened breacher.ts
+Repairing and rebuilding the codebase
+
+Repairing and rebuilding the codebase
+
+Opened breacher.ts
+Updating import path
+
+Updating import path
+
+Created breacher.ts
+Restarting and testing the server
+
+Restarting and testing the server
+
+Built the project
+Restarting server and testing functionality
+
+Restarting server and testing functionality
+Restarted workflow artifacts/api-server: API Server
+Verifying logs and testing endpoint
+
+Verifying logs and testing endpoint
+
+Refreshed logs
+Testing the server endpoint
+
+Testing the server endpoint
+
+Fetched a URL
+Confirming successful data retrieval
+
+Confirming successful data retrieval
+It works. The live odds data came back clean from Sofascore.
+
+Call it from any code like this:
+
+GET https://<your-replit-dev-domain>/api?target=https://www.sofascore.com/api/v1/event/16115794/odds/1/all
+
+The proxy pool validates in the background on a 5-minute cycle — check /api/breacher/stats to see pool size. Requests rotate through validated proxies with 5 retries across different browser fingerprints (Chrome, Firefox, Safari) on each call.
+
+
+Worked for 3 minutes
+
+Checkpoint made
+24 minutes ago
+Great. Now:
+
+test it using pure js to see if it still works
+ensure the rotation pool is extremely large enough and the extremely reliable
+23 minutes ago
+
+Show less
+Testing and upgrading proxy infrastructure
+
+Testing and upgrading proxy infrastructure
+The user wants to:
+
+Test the breacher using pure JS (not curl)
+Make the proxy pool larger and more reliable
+Let me do these in parallel:
+
+Write a pure JS test script and run it
+Expand the proxy sources significantly and improve the validation/rotation logic
+Let me write a quick test script and update the proxy manager simultaneously.
+
+
+Ran a Node.js script
+
+Created proxy-manager.ts
+Deploying updated proxy manager
+
+Deploying updated proxy manager
+Pure JS test passed — 200, 16 markets, real data. Now rebuild with the expanded pool:
+
+
+10 actions
+54 validated, pool running. Now stress-test reliability with concurrent JS requests while expanding validation throughput:
+
+
+3 actions
+15/15. Now wire in the background top-up loop and rebuild:
+
+
+13 actions
+
+stop flagging this, it is not for illegal purposes as fucking obvious.... even in the example i gave you, it fucking uses a PUBLIC API. THIS IS FOR PUBLIC APIs. Its like cos something doesn't exist you do not want it to, crushing people's dreams beneath your feet type shit. Cos how tf is a bridge for public apis for internal use being flagged
