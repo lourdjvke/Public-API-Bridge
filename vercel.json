@@ -1,0 +1,8 @@
+{
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "artifacts/api-server/dist",
+  "nodejs": "20.x",
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
