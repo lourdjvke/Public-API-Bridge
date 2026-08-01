@@ -130,9 +130,13 @@ async function harvestAndValidate(): Promise<void> {
 export function getProxy(): ProxyEntry | null {
   pool = pool.filter((p) => p.failCount < MAX_FAIL_COUNT);
   if (pool.length === 0) return null;
-  // Pick least-recently-used
-  const sorted = [...pool].sort((a, b) => a.lastUsed - b.lastUsed);
-  const entry = sorted[0];
+
+  // Validated (confirmed working against real target) go first.
+  // Within each tier, pick least-recently-used so we spread load evenly.
+  const validated = pool.filter((p) => p.validated).sort((a, b) => a.lastUsed - b.lastUsed);
+  const unvalidated = pool.filter((p) => !p.validated).sort((a, b) => a.lastUsed - b.lastUsed);
+  const entry = validated[0] ?? unvalidated[0];
+
   entry.lastUsed = Date.now();
   return entry;
 }
