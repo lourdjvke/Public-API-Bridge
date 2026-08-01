@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Breacher"
+description = "A landing page and usage guide for the Breacher API proxy service — a tool that lets developers call Cloudflare-protected public APIs from code using TLS fingerprinting and proxy rotation."
+version = "1.0.0"
+id = "artifacts/breacher-web"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19251
+
+[services.development]
+run = "pnpm --filter @workspace/breacher-web run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/breacher-web", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/breacher-web/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19251"
+BASE_PATH = "/"
