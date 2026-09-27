@@ -171,16 +171,21 @@ export function getStats() {
   };
 }
 
+const WARMUP_TIMEOUT_MS = 20_000;
+
 export async function ensureProxyPool(): Promise<void> {
-  if (pool.length > 0 || harvestPromise) {
-    await harvestPromise;
-    return;
+  if (pool.length === 0 && !harvestPromise) {
+    harvestPromise = harvestAndValidate().finally(() => {
+      harvestPromise = null;
+    });
   }
 
-  harvestPromise = harvestAndValidate().finally(() => {
-    harvestPromise = null;
-  });
-  await harvestPromise;
+  if (harvestPromise) {
+    await Promise.race([
+      harvestPromise,
+      new Promise<void>((resolve) => setTimeout(resolve, WARMUP_TIMEOUT_MS)),
+    ]);
+  }
 }
 
 // Start harvesting immediately, and let the first request await the same work
