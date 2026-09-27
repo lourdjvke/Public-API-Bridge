@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { getProxy, markProxyFailed, markProxySuccess, getStats } from "../lib/proxy-manager";
+import { ensureProxyPool, getProxy, markProxyFailed, markProxySuccess, getStats } from "../lib/proxy-manager";
 
 const router: IRouter = Router();
 
@@ -33,6 +33,11 @@ router.get("/", async (req, res): Promise<void> => {
 
   let lastError: unknown;
   let lastStatus: number | null = null;
+
+  // Public upstream blocks direct Vercel egress with 403. Warm the proxy pool
+  // before the first attempt so a cold serverless instance does not waste all
+  // retries on the same blocked direct request.
+  await ensureProxyPool();
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     const proxy = getProxy();

@@ -40,6 +40,7 @@ const MAX_POOL_SIZE = 300;
 let pool: ProxyEntry[] = [];
 let harvesting = false;
 let totalHarvested = 0;
+let harvestPromise: Promise<void> | null = null;
 
 function parseProxies(text: string): string[] {
   const results: string[] = [];
@@ -170,9 +171,22 @@ export function getStats() {
   };
 }
 
-// Start harvesting immediately
-harvestAndValidate().catch(() => {});
-setInterval(() => harvestAndValidate().catch(() => {}), HARVEST_INTERVAL_MS);
+export async function ensureProxyPool(): Promise<void> {
+  if (pool.length > 0 || harvestPromise) {
+    await harvestPromise;
+    return;
+  }
+
+  harvestPromise = harvestAndValidate().finally(() => {
+    harvestPromise = null;
+  });
+  await harvestPromise;
+}
+
+// Start harvesting immediately, and let the first request await the same work
+// instead of falling back to a direct request that the upstream blocks.
+ensureProxyPool().catch(() => {});
+setInterval(() => ensureProxyPool().catch(() => {}), HARVEST_INTERVAL_MS);
 setInterval(() => {
-  if (pool.length < 30) harvestAndValidate().catch(() => {});
+  if (pool.length < 30) ensureProxyPool().catch(() => {});
 }, TOP_UP_INTERVAL_MS);
