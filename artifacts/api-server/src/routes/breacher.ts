@@ -56,7 +56,7 @@ router.get("/", async (req, res): Promise<void> => {
         fetchOptions["proxy"] = proxy.url;
       }
 
-      const upstream = await (fetchFn as (url: string, opts: Record<string, unknown>) => Promise<Response>)(
+      const upstream = await (fetchFn as unknown as (url: string, opts: Record<string, unknown>) => Promise<Response>)(
         target,
         fetchOptions,
       );

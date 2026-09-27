@@ -71,7 +71,7 @@ async function livenessCheck(proxyUrl: string): Promise<boolean> {
     // so we do a TCP-level check via a simple HEAD using wreq-js lite mode
     const wreq = await import("wreq-js");
     const fetchFn = wreq.default?.fetch ?? (wreq as unknown as { fetch: typeof fetch }).fetch;
-    const result = await (fetchFn as (url: string, opts: Record<string, unknown>) => Promise<Response>)(
+    const result = await (fetchFn as unknown as (url: string, opts: Record<string, unknown>) => Promise<Response>)(
       LIVENESS_URL,
       {
         impersonate: "chrome116",
